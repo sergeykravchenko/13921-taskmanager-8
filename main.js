@@ -1,18 +1,22 @@
+'use strict';
+
 const FILTERS_CONTAINER = document.querySelector(`.main__filter`);
 FILTERS_CONTAINER.innerHTML = ``;
 const CARDS_CONTAINER = document.querySelector(`.board__tasks`);
 CARDS_CONTAINER.innerHTML = ``;
 const CARDS_COUNT = 7;
 const TASK_FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `tags`, `archive`];
+const DAYS = [`mo`, `tu`, `we`, `th`, `fr`, `sa`, `su`];
+const COLORS = [`black`, `yellow`, `blue`, `green`, `pink`];
 
 const getRandomInteger = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
 TASK_FILTERS.forEach((item, i) => createFilter(
     item,
     getRandomInteger(0, 30),
-    i === 0 ? true : "",
-    i === 1 || i === 2 ? true : ""
-  )
+    i === 0 ? true : ``,
+    i === 1 || i === 2 ? true : ``
+)
 );
 
 createCards(CARDS_COUNT);
@@ -34,32 +38,72 @@ function onFilterClick(evt) {
     sibling.checked = true;
     createCards(getRandomInteger(0, CARDS_COUNT));
   }
-};
+}
 
-function createFilter (filterName, count, isChecked = false, isDisabled = false) {
+function createFilter(filterName, count, isChecked = false, isDisabled = false) {
   const filterTemplate = `<input
   type="radio"
   id="filter__${filterName}"
   class="filter__input visually-hidden"
   name="filter"
-  ${isChecked ? " checked" : ""}
-  ${isDisabled ? " disabled" : ""}
+  ${isChecked ? ` checked` : ``}
+  ${isDisabled ? ` disabled` : ``}
 />
 <label for="${filterName}" class="filter__label">
 ${filterName.toUpperCase()} <span class="filter__${filterName}-count">${count}</span></label
->`
+>`;
 
-FILTERS_CONTAINER.innerHTML += filterTemplate;
-};
+  FILTERS_CONTAINER.innerHTML += filterTemplate;
+}
 
-function createCards (count) {
+function createCards(count) {
   CARDS_CONTAINER.innerHTML = ``;
-  for (let i = 0; i < count; i++) {
-    createCard();
+  for (let i = 1; i <= count; i++) {
+    createCard(i);
   }
 }
 
-function createCard () {
+function dayTemplate(color, cardIndex, isChecked = false) {
+  return `<input
+  type="radio"
+  id="color-${color}-${cardIndex}"
+  class="card__color-input card__color-input--${color} visually-hidden"
+  name="color"
+  value="${color}"
+  ${isChecked ? ` checked` : ``}
+/>
+<label
+  for="color-${color}-${cardIndex}"
+  class="card__color card__color--${color}"
+  >${color}</label
+>`;
+}
+
+function colorsTemplate(color, cardIndex, isChecked = false) {
+  return `<input
+  type="radio"
+  id="color-${color}-${cardIndex}"
+  class="card__color-input card__color-input--${color} visually-hidden"
+  name="color"
+  value="${color}"
+  ${isChecked ? ` checked` : ``}
+/>
+<label
+  for="color-${color}-${cardIndex}"
+  class="card__color card__color--${color}"
+  >${color}</label
+>`;
+}
+
+function createRepeatNodes(data, template, cardIndex) {
+  let result = ``;
+  data.forEach(function (item, i) {
+    result += template(item, cardIndex, i === 0 ? true : ``);
+  });
+  return result;
+}
+
+function createCard(index) {
   const cardTemplate = `<article class="card card--blue">
   <form class="card__form" method="get">
     <div class="card__inner">
@@ -126,79 +170,7 @@ function createCard () {
 
             <fieldset class="card__repeat-days" disabled>
               <div class="card__repeat-days-inner">
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-mo-5"
-                  name="repeat"
-                  value="mo"
-                />
-                <label class="card__repeat-day" for="repeat-mo-5"
-                  >mo</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-tu-5"
-                  name="repeat"
-                  value="tu"
-                  checked
-                />
-                <label class="card__repeat-day" for="repeat-tu-5"
-                  >tu</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-we-5"
-                  name="repeat"
-                  value="we"
-                />
-                <label class="card__repeat-day" for="repeat-we-5"
-                  >we</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-th-5"
-                  name="repeat"
-                  value="th"
-                />
-                <label class="card__repeat-day" for="repeat-th-5"
-                  >th</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-fr-5"
-                  name="repeat"
-                  value="fr"
-                  checked
-                />
-                <label class="card__repeat-day" for="repeat-fr-5"
-                  >fr</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  name="repeat"
-                  value="sa"
-                  id="repeat-sa-5"
-                />
-                <label class="card__repeat-day" for="repeat-sa-5"
-                  >sa</label
-                >
-                <input
-                  class="visually-hidden card__repeat-day-input"
-                  type="checkbox"
-                  id="repeat-su-5"
-                  name="repeat"
-                  value="su"
-                  checked
-                />
-                <label class="card__repeat-day" for="repeat-su-5"
-                  >su</label
-                >
+                ${createRepeatNodes(DAYS, dayTemplate, index)}
               </div>
             </fieldset>
           </div>
@@ -278,67 +250,7 @@ function createCard () {
         <div class="card__colors-inner">
           <h3 class="card__colors-title">Color</h3>
           <div class="card__colors-wrap">
-            <input
-              type="radio"
-              id="color-black-5"
-              class="card__color-input card__color-input--black visually-hidden"
-              name="color"
-              value="black"
-            />
-            <label
-              for="color-black-5"
-              class="card__color card__color--black"
-              >black</label
-            >
-            <input
-              type="radio"
-              id="color-yellow-5"
-              class="card__color-input card__color-input--yellow visually-hidden"
-              name="color"
-              value="yellow"
-            />
-            <label
-              for="color-yellow-5"
-              class="card__color card__color--yellow"
-              >yellow</label
-            >
-            <input
-              type="radio"
-              id="color-blue-5"
-              class="card__color-input card__color-input--blue visually-hidden"
-              name="color"
-              value="blue"
-            />
-            <label
-              for="color-blue-5"
-              class="card__color card__color--blue"
-              >blue</label
-            >
-            <input
-              type="radio"
-              id="color-green-5"
-              class="card__color-input card__color-input--green visually-hidden"
-              name="color"
-              value="green"
-              checked
-            />
-            <label
-              for="color-green-5"
-              class="card__color card__color--green"
-              >green</label
-            >
-            <input
-              type="radio"
-              id="color-pink-5"
-              class="card__color-input card__color-input--pink visually-hidden"
-              name="color"
-              value="pink"
-            />
-            <label
-              for="color-pink-5"
-              class="card__color card__color--pink"
-              >pink</label
-            >
+            ${createRepeatNodes(COLORS, colorsTemplate, index)}
           </div>
         </div>
       </div>
@@ -351,5 +263,5 @@ function createCard () {
   </form>
 </article>`;
 
-CARDS_CONTAINER.innerHTML += cardTemplate;
-};
+  CARDS_CONTAINER.innerHTML += cardTemplate;
+}
