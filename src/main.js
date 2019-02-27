@@ -1,3 +1,5 @@
+import util from './util';
+import getTask from './get-task';
 import createFilter from './make-filter';
 import createCard from './make-task';
 
@@ -5,8 +7,6 @@ const FILTERS_CONTAINER = document.querySelector(`.main__filter`);
 const CARDS_CONTAINER = document.querySelector(`.board__tasks`);
 const CARDS_COUNT = 7;
 const TASK_FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `tags`, `archive`];
-
-const getRandomInteger = (min, max) => Math.floor(Math.random() * (max - min)) + min;
 
 createFilters();
 createCards(CARDS_COUNT);
@@ -22,7 +22,7 @@ function createFilters() {
   TASK_FILTERS.forEach(function (item, i) {
     filterTemplate += createFilter(
         item,
-        getRandomInteger(0, 30),
+        util.getRandomInteger(0, 30),
         i === 0 ? true : ``,
         i === 1 || i === 2 ? true : ``
     );
@@ -40,15 +40,15 @@ function onFilterClick(evt) {
       activeElement.checked = false;
     }
     sibling.checked = true;
-    createCards(getRandomInteger(1, CARDS_COUNT));
+    createCards(util.getRandomInteger(1, CARDS_COUNT));
   }
 }
 
 function createCards(count) {
   CARDS_CONTAINER.innerHTML = ``;
-  let cardTemplate = ``;
+  let cardTemplate = [];
   for (let i = 1; i <= count; i++) {
-    cardTemplate += createCard(i);
+    cardTemplate.push(createCard(getTask(), i));
   }
-  CARDS_CONTAINER.innerHTML = cardTemplate;
+  CARDS_CONTAINER.innerHTML = cardTemplate.join(``);
 }
