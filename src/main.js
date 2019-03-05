@@ -7,9 +7,10 @@ const FILTERS_CONTAINER = document.querySelector(`.main__filter`);
 const CARDS_CONTAINER = document.querySelector(`.board__tasks`);
 const CARDS_COUNT = 7;
 const TASK_FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `tags`, `archive`];
+const taskData = createData(CARDS_COUNT);
 
 createFilters();
-createCards(CARDS_COUNT);
+createCards(taskData);
 
 FILTERS_CONTAINER.addEventListener(`click`, (evt) => {
   evt.preventDefault();
@@ -44,11 +45,16 @@ function onFilterClick(evt) {
   }
 }
 
-function createCards(count) {
+function createCards(data) {
   CARDS_CONTAINER.innerHTML = ``;
-  let cardTemplate = [];
-  for (let i = 1; i <= count; i++) {
-    cardTemplate.push(createCard(getTask(), i));
+  const cards = data.map((item, i) => createCard(item, i));
+  CARDS_CONTAINER.innerHTML = cards.join(``);
+}
+
+function createData(count) {
+  let result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(getTask());
   }
-  CARDS_CONTAINER.innerHTML = cardTemplate.join(``);
+  return result;
 }
