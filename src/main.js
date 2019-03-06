@@ -1,16 +1,16 @@
 import util from './util';
 import getTask from './get-task';
 import createFilter from './make-filter';
-import createCard from './make-task';
+import Task from './task';
+import EditTask from './edit-task';
 
 const FILTERS_CONTAINER = document.querySelector(`.main__filter`);
 const CARDS_CONTAINER = document.querySelector(`.board__tasks`);
 const CARDS_COUNT = 7;
 const TASK_FILTERS = [`all`, `overdue`, `today`, `favorites`, `repeating`, `tags`, `archive`];
-const taskData = createData(CARDS_COUNT);
 
 createFilters();
-createCards(taskData);
+createCards(CARDS_COUNT);
 
 FILTERS_CONTAINER.addEventListener(`click`, (evt) => {
   evt.preventDefault();
@@ -45,16 +45,28 @@ function onFilterClick(evt) {
   }
 }
 
-function createCards(data) {
+function createCards(count) {
   CARDS_CONTAINER.innerHTML = ``;
-  const cards = data.map((item, i) => createCard(item, i));
-  CARDS_CONTAINER.innerHTML = cards.join(``);
-}
+  const fragment = document.createDocumentFragment();
 
-function createData(count) {
-  let result = [];
   for (let i = 0; i < count; i++) {
-    result.push(getTask());
+    const task = new Task(getTask(), i + 1);
+    const editTask = new EditTask(getTask(), i + 1);
+
+    task.onEdit = () => {
+      editTask.render();
+      CARDS_CONTAINER.replaceChild(editTask.element, task.element);
+      task.unrender();
+    };
+
+    editTask.onSubmit = () => {
+      task.render();
+      CARDS_CONTAINER.replaceChild(task.element, editTask.element);
+      editTask.unrender();
+    };
+
+    task.render();
+    fragment.appendChild(task.element);
   }
-  return result;
+  CARDS_CONTAINER.appendChild(fragment);
 }

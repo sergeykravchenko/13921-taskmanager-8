@@ -42,12 +42,14 @@ const repeatingDays = {
   'su': util.getRandomBoolean(),
 };
 
+export {colors};
+
 export default () => ({
   title: util.getRandomFrom(titles),
   dueDate: Date.now() + util.getRandomInteger(Time.DAYS + 1, -Time.DAYS) * util.getRandomInteger(Time.MS_IN_DAY),
   tags: util.getRandomsFrom([...tags], TAGS_COUNT),
-  picture: `//picsum.photos/100/100?r=${util.getRandomInteger()}`,
-  colors: util.getRandomFrom([...colors]),
+  picture: `//picsum.photos/100/100?r=${util.getRandomInteger(100)}`,
+  color: util.getRandomFrom([...colors]),
   repeatingDays,
   isFavorite: util.getRandomBoolean(),
   isDone: util.getRandomBoolean()
