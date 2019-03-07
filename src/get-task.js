@@ -32,7 +32,7 @@ const colors = new Set([
   `pink`
 ]);
 
-const repeatingDays = {
+const repeatingDays = () => ({
   'mo': util.getRandomBoolean(),
   'tu': util.getRandomBoolean(),
   'we': util.getRandomBoolean(),
@@ -40,7 +40,7 @@ const repeatingDays = {
   'fr': util.getRandomBoolean(),
   'sa': util.getRandomBoolean(),
   'su': util.getRandomBoolean(),
-};
+});
 
 export {colors};
 
@@ -50,7 +50,7 @@ export default () => ({
   tags: util.getRandomsFrom([...tags], TAGS_COUNT),
   picture: `//picsum.photos/100/100?r=${util.getRandomInteger(100)}`,
   color: util.getRandomFrom([...colors]),
-  repeatingDays,
+  repeatingDays: repeatingDays(),
   isFavorite: util.getRandomBoolean(),
   isDone: util.getRandomBoolean()
 });

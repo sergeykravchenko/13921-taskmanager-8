@@ -14,6 +14,7 @@ export default class EditTask {
     this._element = null;
     this._onSubmit = null;
     this._cardIndex = cardIndex;
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._months = [
       `January`,
       `February`,
@@ -36,11 +37,11 @@ export default class EditTask {
 
   _convertDate(date) {
     const standardDate = new Date(date);
-    const dateToArray = standardDate.toString().split(` `);
+    const dateToString = standardDate.toString();
     const dateTemplate = {
-      day: dateToArray[2],
+      day: dateToString.match(/\d+/)[0],
       month: this._months[standardDate.getMonth()],
-      time: dateToArray[4].slice(0, 5)
+      time: dateToString.match(/\d+\:\d+/)[0]
     };
     return dateTemplate;
   }
@@ -228,11 +229,11 @@ export default class EditTask {
 
   bind() {
     this._element.querySelector(`.card__form`)
-        .addEventListener(`submit`, this._onSubmitButtonClick.bind(this));
+        .addEventListener(`submit`, this._onSubmitButtonClick);
   }
 
   unbind() {
     this._element.querySelector(`.card__form`)
-        .removeEventListener(`submit`, this._onSubmitButtonClick.bind(this));
+        .removeEventListener(`submit`, this._onSubmitButtonClick);
   }
 }

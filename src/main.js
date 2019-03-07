@@ -50,8 +50,9 @@ function createCards(count) {
   const fragment = document.createDocumentFragment();
 
   for (let i = 0; i < count; i++) {
-    const task = new Task(getTask(), i + 1);
-    const editTask = new EditTask(getTask(), i + 1);
+    const fillData = getTask();
+    const task = new Task(fillData, i + 1);
+    const editTask = new EditTask(fillData, i + 1);
 
     task.onEdit = () => {
       editTask.render();

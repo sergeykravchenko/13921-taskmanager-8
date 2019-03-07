@@ -12,7 +12,7 @@ export default class Task {
     this._isDone = data.isDone;
     this._element = null;
     this._cardIndex = cardIndex;
-    this.fn = this._onEditButtonClick.bind(this);
+    this._onEditButtonClick = this._onEditButtonClick.bind(this);
     this._months = [
       `January`,
       `February`,
@@ -35,11 +35,12 @@ export default class Task {
 
   _convertDate(date) {
     const standardDate = new Date(date);
-    const dateToArray = standardDate.toString().split(` `);
+    const dateToString = standardDate.toString();
+    console.log(dateToString);
     const dateTemplate = {
-      day: dateToArray[2],
+      day: dateToString.match(/\d+/),
       month: this._months[standardDate.getMonth()],
-      time: dateToArray[4].slice(0, 5)
+      time: dateToString.match(/\d+\:\d+/)
     };
     return dateTemplate;
   }
@@ -183,11 +184,11 @@ export default class Task {
 
   bind() {
     this._element.querySelector(`.card__btn--edit`)
-        .addEventListener(`click`, this.fn);
+        .addEventListener(`click`, this._onEditButtonClick);
   }
 
   unbind() {
     this._element.querySelector(`.card__btn--edit`)
-        .removeEventListener(`click`, this.fn);
+        .removeEventListener(`click`, this._onEditButtonClick);
   }
 }
