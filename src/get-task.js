@@ -4,10 +4,7 @@ const TAGS_COUNT = 3;
 
 const Time = {
   DAYS: 7,
-  HOURS: 24,
-  MINUTES: 60,
-  SECONDS: 60,
-  MILLISECONDS: 1000
+  MS_IN_DAY: 86400000
 };
 
 const titles = [
@@ -35,7 +32,7 @@ const colors = new Set([
   `pink`
 ]);
 
-const repeatingDays = {
+const repeatingDays = () => ({
   'mo': util.getRandomBoolean(),
   'tu': util.getRandomBoolean(),
   'we': util.getRandomBoolean(),
@@ -43,15 +40,17 @@ const repeatingDays = {
   'fr': util.getRandomBoolean(),
   'sa': util.getRandomBoolean(),
   'su': util.getRandomBoolean(),
-};
+});
+
+export {colors};
 
 export default () => ({
   title: util.getRandomFrom(titles),
-  dueDate: Date.now() + util.getRandomInteger(Time.DAYS + 1, -Time.DAYS) * Time.HOURS * Time.MINUTES * Time.SECONDS * Time.MILLISECONDS,
+  dueDate: Date.now() + util.getRandomInteger(Time.DAYS + 1, -Time.DAYS) * util.getRandomInteger(Time.MS_IN_DAY),
   tags: util.getRandomsFrom([...tags], TAGS_COUNT),
-  picture: `//picsum.photos/100/100?r=${util.getRandomInteger()}`,
-  colors: util.getRandomFrom([...colors]),
-  repeatingDays,
+  picture: `//picsum.photos/100/100?r=${util.getRandomInteger(100)}`,
+  color: util.getRandomFrom([...colors]),
+  repeatingDays: repeatingDays(),
   isFavorite: util.getRandomBoolean(),
   isDone: util.getRandomBoolean()
 });

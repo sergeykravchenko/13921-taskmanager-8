@@ -1,7 +1,8 @@
 import util from './util';
 import getTask from './get-task';
 import createFilter from './make-filter';
-import createCard from './make-task';
+import Task from './task';
+import EditTask from './edit-task';
 
 const FILTERS_CONTAINER = document.querySelector(`.main__filter`);
 const CARDS_CONTAINER = document.querySelector(`.board__tasks`);
@@ -46,9 +47,27 @@ function onFilterClick(evt) {
 
 function createCards(count) {
   CARDS_CONTAINER.innerHTML = ``;
-  let cardTemplate = [];
-  for (let i = 1; i <= count; i++) {
-    cardTemplate.push(createCard(getTask(), i));
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < count; i++) {
+    const fillData = getTask();
+    const task = new Task(fillData, i + 1);
+    const editTask = new EditTask(fillData, i + 1);
+
+    task.onEdit = () => {
+      editTask.render();
+      CARDS_CONTAINER.replaceChild(editTask.element, task.element);
+      task.unrender();
+    };
+
+    editTask.onSubmit = () => {
+      task.render();
+      CARDS_CONTAINER.replaceChild(task.element, editTask.element);
+      editTask.unrender();
+    };
+
+    task.render();
+    fragment.appendChild(task.element);
   }
-  CARDS_CONTAINER.innerHTML = cardTemplate.join(``);
+  CARDS_CONTAINER.appendChild(fragment);
 }
