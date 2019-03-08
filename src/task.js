@@ -1,16 +1,17 @@
-import util from './util';
+import Component from './component';
 
-export default class Task {
+export default class Task extends Component {
   constructor(data, cardIndex) {
+    super();
     this._title = data.title;
     this._dueDate = data.dueDate;
     this._tags = data.tags;
     this._picture = data.picture;
     this._repeatingDays = data.repeatingDays;
     this._color = data.color;
+    this._onEdit = null;
     this._isFavorite = data.isFavorite;
     this._isDone = data.isDone;
-    this._element = null;
     this._cardIndex = cardIndex;
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
     this._months = [
@@ -36,7 +37,6 @@ export default class Task {
   _convertDate(date) {
     const standardDate = new Date(date);
     const dateToString = standardDate.toString();
-    console.log(dateToString);
     const dateTemplate = {
       day: dateToString.match(/\d+/),
       month: this._months[standardDate.getMonth()],
@@ -47,10 +47,6 @@ export default class Task {
 
   _onEditButtonClick() {
     return typeof this._onEdit === `function` && this._onEdit();
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onEdit(fn) {
@@ -171,23 +167,12 @@ export default class Task {
   </article>`;
   }
 
-  render() {
-    this._element = util.createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
-  }
-
-  bind() {
+  createListeners() {
     this._element.querySelector(`.card__btn--edit`)
         .addEventListener(`click`, this._onEditButtonClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`.card__btn--edit`)
         .removeEventListener(`click`, this._onEditButtonClick);
   }
