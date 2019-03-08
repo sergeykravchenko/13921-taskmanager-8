@@ -1,8 +1,9 @@
-import util from './util';
+import Component from './component';
 import {colors} from './get-task';
 
-export default class EditTask {
+export default class EditTask extends Component {
   constructor(data, cardIndex) {
+    super();
     this._title = data.title;
     this._dueDate = data.dueDate;
     this._tags = data.tags;
@@ -53,10 +54,6 @@ export default class EditTask {
 
   set onSubmit(fn) {
     this._onSubmit = fn;
-  }
-
-  get element() {
-    return this._element;
   }
 
   get template() {
@@ -216,23 +213,12 @@ export default class EditTask {
   </article>`;
   }
 
-  render() {
-    this._element = util.createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
-  }
-
-  bind() {
+  createListeners() {
     this._element.querySelector(`.card__form`)
         .addEventListener(`submit`, this._onSubmitButtonClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`.card__form`)
         .removeEventListener(`submit`, this._onSubmitButtonClick);
   }
