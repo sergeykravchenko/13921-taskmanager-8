@@ -1,4 +1,5 @@
 import Component from './component';
+import moment from 'moment';
 
 export default class Task extends Component {
   constructor(data, cardIndex) {
@@ -14,35 +15,11 @@ export default class Task extends Component {
     this._isDone = data.isDone;
     this._cardIndex = cardIndex;
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
-    this._months = [
-      `January`,
-      `February`,
-      `March`,
-      `April`,
-      `May`,
-      `June`,
-      `July`,
-      `August`,
-      `September`,
-      `October`,
-      `November`,
-      `December`
-    ];
+    this._isOverdue = Date.now() > this._dueDate;
   }
 
   _isRepeated() {
     return Object.values(this._repeatingDays).some((item) => item === true);
-  }
-
-  _convertDate(date) {
-    const standardDate = new Date(date);
-    const dateToString = standardDate.toString();
-    const dateTemplate = {
-      day: dateToString.match(/\d+/),
-      month: this._months[standardDate.getMonth()],
-      time: dateToString.match(/\d+\:\d+/)
-    };
-    return dateTemplate;
   }
 
   _onEditButtonClick() {
@@ -54,7 +31,7 @@ export default class Task extends Component {
   }
 
   get template() {
-    return `<article class="card card--${this._color} ${this._isRepeated() ? `card--repeat` : ``} ${this._dueDate < Date.now() ? `card--deadline` : ``}">
+    return `<article class="card card--${this._color} ${this._isRepeated() ? `card--repeat` : ``} ${this._isOverdue ? `card--deadline` : ``}">
     <form class="card__form" method="get">
       <div class="card__inner">
         <div class="card__control">
@@ -91,47 +68,12 @@ export default class Task extends Component {
         <div class="card__settings">
           <div class="card__details">
             <div class="card__dates">
-
-              <fieldset class="card__date-deadline" ${this._dueDate ? `` : `disabled`}>
-                <label class="card__input-deadline-wrap">
-                  <input
-                    class="card__date"
-                    type="text"
-                    placeholder="${this._convertDate(this._dueDate).day} ${this._convertDate(this._dueDate).month}"
-                    name="date"
-                  />
-                </label>
-                <label class="card__input-deadline-wrap">
-                  <input
-                    class="card__time"
-                    type="text"
-                    placeholder="${this._convertDate(this._dueDate).time}"
-                    name="time"
-                  />
-                </label>
-              </fieldset>
-
-              <fieldset class="card__repeat-days" disabled>
-                <div class="card__repeat-days-inner">
-                  ${Object.entries(this._repeatingDays).map(([day, value]) => (`
-                  <input
-                    class="visually-hidden card__repeat-day-input"
-                    type="checkbox"
-                    id="repeat-${day}-${this._cardIndex}"
-                    name="repeat"
-                    value="${day}"
-                    ${value ? ` checked` : ``}
-                  />
-                  <label class="card__repeat-day" for="repeat-${day}-${this._cardIndex}"
-                    >${day}</label>
-                  `)).join(``)}
-                </div>
-              </fieldset>
+              <span class="card__date">${this._dueDate ? moment(this._dueDate).format(`DD MMMM hh:mm`) : ``}</span>
             </div>
 
             <div class="card__hashtag">
               <div class="card__hashtag-list">
-                ${this._tags.map((item) => (`
+                ${[...this._tags].map((item) => (`
                 <span class="card__hashtag-inner">
                   <input
                     type="hidden"
@@ -167,7 +109,7 @@ export default class Task extends Component {
   </article>`;
   }
 
-  createListeners() {
+  setListeners() {
     this._element.querySelector(`.card__btn--edit`)
         .addEventListener(`click`, this._onEditButtonClick);
   }
@@ -175,5 +117,12 @@ export default class Task extends Component {
   removeListeners() {
     this._element.querySelector(`.card__btn--edit`)
         .removeEventListener(`click`, this._onEditButtonClick);
+  }
+
+  update(data) {
+    this._title = data.title;
+    this._tags = data.tags;
+    this._color = data.color;
+    this._repeatingDays = data.repeatingDays;
   }
 }

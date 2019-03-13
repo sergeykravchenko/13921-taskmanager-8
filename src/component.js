@@ -6,6 +6,7 @@ export default class Component {
       throw new Error(`Can't instantiate Component, only concrete one.`);
     }
     this._element = null;
+    this._state = {};
   }
 
   get element() {
@@ -18,11 +19,11 @@ export default class Component {
 
   render() {
     this._element = util.createElement(this.template);
-    this.createListeners();
+    this.setListeners();
     return this._element;
   }
 
-  createListeners() {}
+  setListeners() {}
 
   removeListeners() {}
 
@@ -31,4 +32,6 @@ export default class Component {
     this._element.remove();
     this._element = null;
   }
+
+  update() {}
 }
