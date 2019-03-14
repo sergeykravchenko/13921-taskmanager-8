@@ -1,6 +1,7 @@
 import Component from './component';
 import {colors} from './get-task';
 import flatpickr from 'flatpickr';
+import moment from 'moment';
 
 export default class EditTask extends Component {
   constructor(data, cardIndex) {
@@ -23,53 +24,26 @@ export default class EditTask extends Component {
     this._onChangeDate = this._onChangeDate.bind(this);
     this._onChangeRepeated = this._onChangeRepeated.bind(this);
     this._setBarColorOnEdit = this._setBarColorOnEdit.bind(this);
-    this._months = [
-      `January`,
-      `February`,
-      `March`,
-      `April`,
-      `May`,
-      `June`,
-      `July`,
-      `August`,
-      `September`,
-      `October`,
-      `November`,
-      `December`
-    ];
   }
 
   _isRepeated() {
     return Object.values(this._repeatingDays).some((item) => item === true);
   }
 
-  _convertDate(date) {
-    const standardDate = new Date(date);
-    const dateToString = standardDate.toString();
-    const dateTemplate = {
-      day: dateToString.match(/\d+/)[0],
-      month: this._months[standardDate.getMonth()],
-      time: dateToString.match(/\d+\:\d+/)[0]
-    };
-    return dateTemplate;
-  }
-
   _onChangeDate() {
     this._state.isDate = !this._state.isDate;
-    this.removeListeners();
     this._partialUpdate();
     this.setListeners();
   }
 
   _onChangeRepeated() {
     this._state.isRepeated = !this._state.isRepeated;
-    this.removeListeners();
     this._partialUpdate();
-    this.setListeners();
   }
 
   _setBarColorOnEdit() {
     const color = this._element.querySelector(`.card__color-input:checked`).value;
+    this._color = color;
     const newColorClass = this._element.className.replace(/(?!card|\--|edit)\b\S+/, color);
     this._element.className = newColorClass;
   }
@@ -78,13 +52,18 @@ export default class EditTask extends Component {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`.card__form`));
     const newData = this._processForm(formData);
-    typeof this._onSubmit === `function` && this._onSubmit(newData);
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
 
     this.update(newData);
   }
 
   _partialUpdate() {
-    this._element.innerHTML = this.template;
+    this.removeListeners();
+    const oldElement = this._element;
+    this.render();
+    oldElement.parentElement.replaceChild(this._element, oldElement);
   }
 
   _processForm(formData) {
@@ -106,9 +85,10 @@ export default class EditTask extends Component {
 
     const editTaskMapper = EditTask.createMapper(entry);
 
-    for (const pair of formData.entries()) {
-      const [property, value] = pair;
-      editTaskMapper[property] && editTaskMapper[property](value);
+    for (const [property, value] of formData.entries()) {
+      if (editTaskMapper[property]) {
+        editTaskMapper[property](value);
+      }
     }
 
     return entry;
@@ -165,7 +145,7 @@ export default class EditTask extends Component {
                   <input
                     class="card__date"
                     type="text"
-                    placeholder="${this._convertDate(this._dueDate).day} ${this._convertDate(this._dueDate).month}"
+                    placeholder="${moment(this._dueDate).format(`DD MMMM`)}"
                     name="date"
                   />
                 </label>
@@ -173,7 +153,7 @@ export default class EditTask extends Component {
                   <input
                     class="card__time"
                     type="text"
-                    placeholder="${this._convertDate(this._dueDate).time}"
+                    placeholder="${moment(this._dueDate).format(`hh:mm`)}"
                     name="time"
                   />
                 </label>
@@ -208,7 +188,7 @@ export default class EditTask extends Component {
                   <input
                     type="hidden"
                     name="hashtag"
-                    value="repeat"
+                    value="${item}"
                     class="card__hashtag-hidden-input"
                   />
                   <button type="button" class="card__hashtag-name">

@@ -23,7 +23,9 @@ export default class Task extends Component {
   }
 
   _onEditButtonClick() {
-    return typeof this._onEdit === `function` && this._onEdit();
+    if (typeof this._onEdit === `function`) {
+      this._onEdit();
+    }
   }
 
   set onEdit(fn) {
@@ -78,7 +80,7 @@ export default class Task extends Component {
                   <input
                     type="hidden"
                     name="hashtag"
-                    value="repeat"
+                    value="${item}"
                     class="card__hashtag-hidden-input"
                   />
                   <button type="button" class="card__hashtag-name">
