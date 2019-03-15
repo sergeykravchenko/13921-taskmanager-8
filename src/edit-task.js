@@ -33,7 +33,6 @@ export default class EditTask extends Component {
   _onChangeDate() {
     this._state.isDate = !this._state.isDate;
     this._partialUpdate();
-    this.setListeners();
   }
 
   _onChangeRepeated() {
@@ -266,8 +265,8 @@ export default class EditTask extends Component {
         .addEventListener(`change`, this._setBarColorOnEdit);
 
     if (this._state.isDate) {
-      flatpickr(`.card__date`, {altInput: true, altFormat: `j F`, dateFormat: `j F`});
-      flatpickr(`.card__time`, {enableTime: true, noCalendar: true, altInput: true, altFormat: `h:i K`, dateFormat: `h:i K`});
+      flatpickr(this._element.querySelector(`.card__date`), {altInput: true, altFormat: `j F`, dateFormat: `j F`});
+      flatpickr(this._element.querySelector(`.card__time`), {enableTime: true, noCalendar: true, altInput: true, altFormat: `h:i K`, dateFormat: `h:i K`});
     }
   }
 
