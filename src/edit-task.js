@@ -1,5 +1,7 @@
 import Component from './component';
 import {colors} from './get-task';
+import flatpickr from 'flatpickr';
+import moment from 'moment';
 
 export default class EditTask extends Component {
   constructor(data, cardIndex) {
@@ -16,40 +18,79 @@ export default class EditTask extends Component {
     this._onSubmit = null;
     this._cardIndex = cardIndex;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
-    this._months = [
-      `January`,
-      `February`,
-      `March`,
-      `April`,
-      `May`,
-      `June`,
-      `July`,
-      `August`,
-      `September`,
-      `October`,
-      `November`,
-      `December`
-    ];
+    this._onSubmit = null;
+    this._state.isDate = false;
+    this._state.isRepeated = false;
+    this._onChangeDate = this._onChangeDate.bind(this);
+    this._onChangeRepeated = this._onChangeRepeated.bind(this);
+    this._setBarColorOnEdit = this._setBarColorOnEdit.bind(this);
   }
 
   _isRepeated() {
     return Object.values(this._repeatingDays).some((item) => item === true);
   }
 
-  _convertDate(date) {
-    const standardDate = new Date(date);
-    const dateToString = standardDate.toString();
-    const dateTemplate = {
-      day: dateToString.match(/\d+/)[0],
-      month: this._months[standardDate.getMonth()],
-      time: dateToString.match(/\d+\:\d+/)[0]
-    };
-    return dateTemplate;
+  _onChangeDate() {
+    this._state.isDate = !this._state.isDate;
+    this._partialUpdate();
+  }
+
+  _onChangeRepeated() {
+    this._state.isRepeated = !this._state.isRepeated;
+    this._partialUpdate();
+  }
+
+  _setBarColorOnEdit() {
+    const color = this._element.querySelector(`.card__color-input:checked`).value;
+    this._color = color;
+    const newColorClass = this._element.className.replace(/(?!card|\--|edit)\b\S+/, color);
+    this._element.className = newColorClass;
   }
 
   _onSubmitButtonClick(evt) {
     evt.preventDefault();
-    return typeof this._onSubmit === `function` && this._onSubmit();
+    const formData = new FormData(this._element.querySelector(`.card__form`));
+    const newData = this._processForm(formData);
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+
+    this.update(newData);
+  }
+
+  _partialUpdate() {
+    this.removeListeners();
+    const oldElement = this._element;
+    this.render();
+    oldElement.parentElement.replaceChild(this._element, oldElement);
+  }
+
+  _processForm(formData) {
+    const entry = {
+      title: ``,
+      color: ``,
+      tags: new Set(),
+      dueDate: new Date(),
+      repeatingDays: {
+        'mo': false,
+        'tu': false,
+        'we': false,
+        'th': false,
+        'fr': false,
+        'sa': false,
+        'su': false,
+      }
+    };
+
+    const editTaskMapper = EditTask.createMapper(entry);
+
+    for (const [property, value] of formData.entries()) {
+      if (editTaskMapper[property]) {
+        editTaskMapper[property](value);
+      }
+    }
+
+    return entry;
   }
 
   set onSubmit(fn) {
@@ -95,15 +136,15 @@ export default class EditTask extends Component {
           <div class="card__details">
             <div class="card__dates">
               <button class="card__date-deadline-toggle" type="button">
-                date: <span class="card__date-status">no</span>
+                date: <span class="card__date-status">${this._state.isDate ? `yes` : `no`}</span>
               </button>
 
-              <fieldset class="card__date-deadline" ${this._dueDate ? `` : `disabled`}>
+              <fieldset class="card__date-deadline" ${this._state.isDate ? `` : `disabled`}>
                 <label class="card__input-deadline-wrap">
                   <input
                     class="card__date"
                     type="text"
-                    placeholder="${this._convertDate(this._dueDate).day} ${this._convertDate(this._dueDate).month}"
+                    placeholder="${moment(this._dueDate).format(`DD MMMM`)}"
                     name="date"
                   />
                 </label>
@@ -111,17 +152,17 @@ export default class EditTask extends Component {
                   <input
                     class="card__time"
                     type="text"
-                    placeholder="${this._convertDate(this._dueDate).time}"
+                    placeholder="${moment(this._dueDate).format(`hh:mm`)}"
                     name="time"
                   />
                 </label>
               </fieldset>
 
               <button class="card__repeat-toggle" type="button">
-                repeat:<span class="card__repeat-status">${this._isRepeated() ? `yes` : `no`}</span>
+                repeat:<span class="card__repeat-status">${this._state.isRepeated ? `yes` : `no`}</span>
               </button>
 
-              <fieldset class="card__repeat-days" ${this._isRepeated() ? `` : `disabled`}>
+              <fieldset class="card__repeat-days" ${this._state.isRepeated ? `` : `disabled`}>
                 <div class="card__repeat-days-inner">
                   ${Object.entries(this._repeatingDays).map(([day, value]) => (`
                   <input
@@ -141,12 +182,12 @@ export default class EditTask extends Component {
 
             <div class="card__hashtag">
               <div class="card__hashtag-list">
-                ${this._tags.map((item) => (`
+                ${[...this._tags].map((item) => (`
                 <span class="card__hashtag-inner">
                   <input
                     type="hidden"
                     name="hashtag"
-                    value="repeat"
+                    value="${item}"
                     class="card__hashtag-hidden-input"
                   />
                   <button type="button" class="card__hashtag-name">
@@ -213,13 +254,48 @@ export default class EditTask extends Component {
   </article>`;
   }
 
-  createListeners() {
+  setListeners() {
     this._element.querySelector(`.card__form`)
         .addEventListener(`submit`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__date-deadline-toggle`)
+        .addEventListener(`click`, this._onChangeDate);
+    this._element.querySelector(`.card__repeat-toggle`)
+        .addEventListener(`click`, this._onChangeRepeated);
+    this._element.querySelector(`.card__form`)
+        .addEventListener(`change`, this._setBarColorOnEdit);
+
+    if (this._state.isDate) {
+      flatpickr(this._element.querySelector(`.card__date`), {altInput: true, altFormat: `j F`, dateFormat: `j F`});
+      flatpickr(this._element.querySelector(`.card__time`), {enableTime: true, noCalendar: true, altInput: true, altFormat: `h:i K`, dateFormat: `h:i K`});
+    }
   }
 
   removeListeners() {
     this._element.querySelector(`.card__form`)
         .removeEventListener(`submit`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__date-deadline-toggle`)
+        .removeEventListener(`click`, this._onChangeDate);
+    this._element.querySelector(`.card__repeat-toggle`)
+        .removeEventListener(`click`, this._onChangeRepeated);
+    this._element.querySelector(`.card__form`)
+        .removeEventListener(`change`, this._setBarColorOnEdit);
+  }
+
+  update(data) {
+    this._title = data.title;
+    this._tags = data.tags;
+    this._color = data.color;
+    this._repeatingDays = data.repeatingDays;
+    this._dueDate = data.dueDate;
+  }
+
+  static createMapper(target) {
+    return {
+      hashtag: (value) => target.tags.add(value),
+      text: (value) => (target.title = value),
+      color: (value) => (target.color = value),
+      repeat: (value) => (target.repeatingDays[value] = true),
+      date: (value) => target.dueDate[value],
+    };
   }
 }

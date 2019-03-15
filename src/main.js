@@ -60,7 +60,14 @@ function createCards(count) {
       task.unrender();
     };
 
-    editTask.onSubmit = () => {
+    editTask.onSubmit = (newObject) => {
+      task.title = newObject.title;
+      task.tags = newObject.tags;
+      task.color = newObject.color;
+      task.repeatingDays = newObject.repeatingDays;
+      task.dueDate = newObject.dueDate;
+
+      task.update(task);
       task.render();
       CARDS_CONTAINER.replaceChild(task.element, editTask.element);
       editTask.unrender();
