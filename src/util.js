@@ -5,7 +5,10 @@ const util = {
   getRandomsFrom: (array, count) => array.slice(array.length - util.getRandomInteger(count + 1)),
   createElement: (template) => {
     const newElement = document.createElement(`div`);
-    newElement.innerHTML = template;
+    newElement.innerHTML = template.trim();
+    if (newElement.children.length > 1) {
+      return newElement;
+    }
     return newElement.firstChild;
   }
 };
