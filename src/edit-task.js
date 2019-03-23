@@ -16,7 +16,6 @@ export default class EditTask extends Component {
     this._isDone = data.isDone;
     this._element = null;
     this._onSubmit = null;
-    this._onDelete = null;
     this._cardIndex = cardIndex;
     this._onSubmit = null;
     this._state.isDate = false;
@@ -311,7 +310,7 @@ export default class EditTask extends Component {
       text: (value) => (target.title = value),
       color: (value) => (target.color = value),
       repeat: (value) => (target.repeatingDays[value] = true),
-      date: (value) => target.dueDate[value],
+      date: (value) => (target.dueDate = value)
     };
   }
 }

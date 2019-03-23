@@ -185,9 +185,9 @@ function onCloseDate(dates, tasks) {
 
 function updateChart(chart, labels, values, bgColors = false) {
   chart.data.labels = labels;
-  chart.data.datasets.data = values;
+  chart.data.datasets[0].data = values;
   if (bgColors) {
-    bgColors = chart.data.datasets.backgroundColor = bgColors;
+    bgColors = chart.data.datasets[0].backgroundColor = bgColors;
   }
   chart.update();
 }

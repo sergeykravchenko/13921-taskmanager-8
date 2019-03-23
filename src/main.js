@@ -8,9 +8,10 @@ import {default as statsInit, STATS} from './stats';
 
 const FILTERS_CONTAINER = document.querySelector(`.main__filter`);
 const CARDS_CONTAINER = document.querySelector(`.board__tasks`);
+const tasksButton = document.querySelector(`#control__task`);
 const statsButton = document.querySelector(`#control__statistic`);
 const CARDS_COUNT = 7;
-const cardsData = createData(CARDS_COUNT);
+let cardsData = createData(CARDS_COUNT);
 const FILTER_MAX_COUNT = 30;
 
 const TaskFilters = [
@@ -44,12 +45,18 @@ const filterTypes = {
   all: () => cardsData,
   overdue: () => cardsData.filter((item) => item.dueDate < moment()),
   today: () => cardsData.filter((item) => moment(item.dueDate).isSame(moment(), `day`)),
-  repeating: () => cardsData.filter((item) => Object.values(item.repeatingDays).includes(true))
+  repeating: () => cardsData.filter((item) => Object.entries(item.repeatingDays).some((entry) => entry[1]))
 };
 
 createFilters();
 renderTasks(CARDS_CONTAINER, cardsData);
+tasksButton.addEventListener(`click`, onTasksButtonClick);
 statsButton.addEventListener(`click`, onStatsButtonClick);
+
+function onTasksButtonClick() {
+  document.querySelector(`.board.container`).classList.remove(`visually-hidden`);
+  STATS.classList.add(`visually-hidden`);
+}
 
 function onStatsButtonClick() {
   document.querySelector(`.board.container`).classList.add(`visually-hidden`);
@@ -76,8 +83,7 @@ function createFilters() {
 
 function renderTasks(container, data) {
   container.innerHTML = ``;
-  const fillTasks = data.map((item) => item);
-  const tasks = createTasks(fillTasks);
+  const tasks = createTasks(data);
   container.appendChild(tasks);
 }
 
@@ -104,8 +110,10 @@ function createTasks(data) {
     };
 
     editTask.onDelete = () => {
-      array.splice(i, 1, null);
+      array.splice(i, 1);
       editTask.unrender();
+      cardsData = array;
+      renderTasks(CARDS_CONTAINER, cardsData);
     };
 
     task.render();
