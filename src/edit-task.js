@@ -25,6 +25,7 @@ export default class EditTask extends Component {
     this._onChangeDate = this._onChangeDate.bind(this);
     this._onChangeRepeated = this._onChangeRepeated.bind(this);
     this._setBarColorOnEdit = this._setBarColorOnEdit.bind(this);
+    this._setTextOnEdit = this._setTextOnEdit.bind(this);
   }
 
   _isRepeated() {
@@ -46,6 +47,11 @@ export default class EditTask extends Component {
     this._color = color;
     const newColorClass = this._element.className.replace(/(?!card|\--|edit)\b\S+/, color);
     this._element.className = newColorClass;
+  }
+
+  _setTextOnEdit() {
+    const text = this._element.querySelector(`.card__text`).value;
+    this._title = text;
   }
 
   _onSubmitButtonClick(evt) {
@@ -274,12 +280,14 @@ export default class EditTask extends Component {
         .addEventListener(`click`, this._onChangeRepeated);
     this._element.querySelector(`.card__form`)
         .addEventListener(`change`, this._setBarColorOnEdit);
+    this.element.querySelector(`.card__text`)
+        .addEventListener(`change`, this._setTextOnEdit);
     this._element.querySelector(`.card__delete`)
         .addEventListener(`click`, this._onDeleteButtonClick);
 
     if (this._state.isDate) {
-      flatpickr(this._element.querySelector(`.card__date`), {altInput: true, altFormat: `j F`, dateFormat: `j F`});
-      flatpickr(this._element.querySelector(`.card__time`), {enableTime: true, noCalendar: true, altInput: true, altFormat: `h:i K`, dateFormat: `h:i K`});
+      flatpickr(this._element.querySelector(`.card__date`), {altInput: true, dateFormat: `j F`});
+      flatpickr(this._element.querySelector(`.card__time`), {enableTime: true, noCalendar: true, altInput: true, dateFormat: `h:i K`});
     }
   }
 
@@ -292,6 +300,8 @@ export default class EditTask extends Component {
         .removeEventListener(`click`, this._onChangeRepeated);
     this._element.querySelector(`.card__form`)
         .removeEventListener(`change`, this._setBarColorOnEdit);
+    this.element.querySelector(`.card__text`)
+        .removeEventListener(`change`, this._setTextOnEdit);
     this._element.querySelector(`.card__delete`)
         .removeEventListener(`click`, this._onDeleteButtonClick);
   }
@@ -310,7 +320,17 @@ export default class EditTask extends Component {
       text: (value) => (target.title = value),
       color: (value) => (target.color = value),
       repeat: (value) => (target.repeatingDays[value] = true),
-      date: (value) => (target.dueDate = value)
+      date: (value) => {
+        target.dueDate = moment(value, `DD MMMM`).toDate().getTime();
+      },
+      time: (value) => {
+        const time = moment(value, `HH:mm A`);
+        target.dueDate = moment(target.dueDate)
+          .set({
+            hour: time.hour(),
+            minute: time.minute()
+          }).toDate().getTime();
+      },
     };
   }
 }
