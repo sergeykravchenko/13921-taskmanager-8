@@ -4,16 +4,17 @@ import moment from 'moment';
 export default class Task extends Component {
   constructor(data, cardIndex) {
     super();
+    this.id = data.id;
     this._title = data.title;
-    this._dueDate = data.dueDate;
+    this._dueDate = new Date(data.dueDate);
     this._tags = data.tags;
     this._picture = data.picture;
     this._repeatingDays = data.repeatingDays;
     this._color = data.color;
-    this._onEdit = null;
     this._isFavorite = data.isFavorite;
     this._isDone = data.isDone;
     this._cardIndex = cardIndex;
+    this._onEdit = null;
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
     this._isOverdue = Date.now() > this._dueDate;
   }
@@ -34,7 +35,6 @@ export default class Task extends Component {
 
   get template() {
     return `<article class="card card--${this._color} ${this._isRepeated() ? `card--repeat` : ``} ${this._isOverdue ? `card--deadline` : ``}">
-    <form class="card__form" method="get">
       <div class="card__inner">
         <div class="card__control">
           <button type="button" class="card__btn card__btn--edit">
@@ -58,13 +58,9 @@ export default class Task extends Component {
         </div>
 
         <div class="card__textarea-wrap">
-          <label>
-            <textarea
-              class="card__text"
-              placeholder="Start typing your text here..."
-              name="text"
-            >${this._title}</textarea>
-          </label>
+        <div>
+          <span class="card__text">${this._title}</span>
+        </div>
         </div>
 
         <div class="card__settings">
@@ -92,22 +88,12 @@ export default class Task extends Component {
             </div>
           </div>
 
-          <label class="card__img-wrap ${this._picture ? `` : `card__img-wrap--empty`}">
-            <input
-              type="file"
-              class="card__img-input visually-hidden"
-              name="img"
-            />
-            <img
-              src="${this._picture}"
-              alt="task picture"
-              class="card__img"
-            />
-          </label>
+          <span class="card__img-wrap ${this._picture ? `` : `card__img-wrap--empty`}">
+            <img src="${this._picture}" alt="task picture" class="card__img"/>
+          </span>
         </div>
 
       </div>
-    </form>
   </article>`;
   }
 
@@ -127,5 +113,19 @@ export default class Task extends Component {
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
     this._dueDate = data.dueDate;
+  }
+
+  toRAW() {
+    return {
+      'id': this.id,
+      'title': this._title,
+      'due_date': this._dueDate,
+      'tags': [...this._tags.values()],
+      'picture': this._picture,
+      'repeating_days': this._repeatingDays,
+      'color': this._color,
+      'is_favorite': this._isFavorite,
+      'is_done': this._isDone,
+    };
   }
 }
