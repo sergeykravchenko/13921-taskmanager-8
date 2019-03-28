@@ -108,6 +108,7 @@ const createTasks = (data) => {
           task.render();
           TASKS_CONTAINER.replaceChild(task.element, editTask.element);
           editTask.unrender();
+          api.getTasks().then((updatedTasks) => createFilters(updatedTasks));
         })
         .catch(() => {
           editTask.styleOnError();
@@ -148,9 +149,11 @@ const onTasksButtonClick = () => {
   STATS.classList.add(`visually-hidden`);
 };
 
+let tasksData = [];
 const onStatsButtonClick = () => {
   BOARD.classList.add(`visually-hidden`);
   STATS.classList.remove(`visually-hidden`);
+  statsInit(tasksData);
 };
 
 tasksButton.addEventListener(`click`, onTasksButtonClick);
@@ -160,9 +163,9 @@ onLoadTasks();
 
 api.getTasks()
   .then((tasks) => {
+    tasksData = tasks;
     createFilters(tasks);
     renderTasks(TASKS_CONTAINER, tasks);
-    statsInit(tasks);
   })
   .then(onLoadTasksEnd)
   .catch(onLoadTasksError);

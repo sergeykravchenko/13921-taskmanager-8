@@ -91,7 +91,7 @@ export default class EditTask extends Component {
       title: ``,
       color: ``,
       tags: new Set(),
-      dueDate: new Date(),
+      dueDate: ``,
       repeatingDays: {
         'mo': false,
         'tu': false,
@@ -170,7 +170,7 @@ export default class EditTask extends Component {
                     class="card__date"
                     type="text"
                     name="date"
-                    ${this._state.isDate ? `value="${moment(this._dueDate).format(`DD MMMM`)}"` : ``}
+                    ${this._state.isDate ? `value="${moment(this._dueDate).format(`DD MMMM`)}"` : `value=""`}
                   />
                 </label>
                 <label class="card__input-deadline-wrap">
@@ -178,7 +178,7 @@ export default class EditTask extends Component {
                     class="card__time"
                     type="text"
                     name="time"
-                    ${this._state.isDate ? `value="${moment(this._dueDate).format(`hh:mm`)}"` : ``}
+                    ${this._state.isDate ? `value="${moment(this._dueDate).format(`hh:mm`)}"` : `value=""`}
                   />
                 </label>
               </fieldset>
@@ -367,16 +367,24 @@ export default class EditTask extends Component {
       color: (value) => (target.color = value),
       repeat: (value) => (target.repeatingDays[value] = true),
       date: (value) => {
-        target.dueDate = moment(value, `DD MMMM`).toDate().getTime();
+        if (value) {
+          target.dueDate = moment(value, `DD MMMM`).toDate().getTime();
+        } else {
+          target.dueDate = ``;
+        }
       },
       time: (value) => {
-        const time = moment(value, `HH:mm A`);
-        target.dueDate = moment(target.dueDate)
-          .set({
-            hour: time.hour(),
-            minute: time.minute()
-          }).toDate().getTime();
-      },
+        if (value) {
+          const time = moment(value, `HH:mm A`);
+          target.dueDate = moment(target.dueDate)
+            .set({
+              hour: time.hour(),
+              minute: time.minute()
+            }).toDate().getTime();
+        } else {
+          target.dueDate = ``;
+        }
+      }
     };
   }
 }

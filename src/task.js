@@ -6,7 +6,7 @@ export default class Task extends Component {
     super();
     this.id = data.id;
     this._title = data.title;
-    this._dueDate = new Date(data.dueDate);
+    this._dueDate = data.dueDate;
     this._tags = data.tags;
     this._picture = data.picture;
     this._repeatingDays = data.repeatingDays;
