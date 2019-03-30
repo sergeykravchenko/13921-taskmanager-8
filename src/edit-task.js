@@ -1,11 +1,19 @@
 import Component from './component';
-import {colors} from './get-task';
 import flatpickr from 'flatpickr';
 import moment from 'moment';
+
+const colors = new Set([
+  `black`,
+  `yellow`,
+  `blue`,
+  `green`,
+  `pink`
+]);
 
 export default class EditTask extends Component {
   constructor(data, cardIndex) {
     super();
+    this._id = data.id;
     this._title = data.title;
     this._dueDate = data.dueDate;
     this._tags = data.tags;
@@ -18,8 +26,8 @@ export default class EditTask extends Component {
     this._onSubmit = null;
     this._cardIndex = cardIndex;
     this._onSubmit = null;
-    this._state.isDate = false;
-    this._state.isRepeated = false;
+    this._state.isDate = this._dueDate ? true : false;
+    this._state.isRepeated = this._isRepeated() ? true : false;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
     this._onChangeDate = this._onChangeDate.bind(this);
@@ -29,7 +37,7 @@ export default class EditTask extends Component {
   }
 
   _isRepeated() {
-    return Object.values(this._repeatingDays).some((item) => item === true);
+    return Object.values(this._repeatingDays).includes(true);
   }
 
   _onChangeDate() {
@@ -67,7 +75,7 @@ export default class EditTask extends Component {
 
   _onDeleteButtonClick() {
     if (typeof this._onDelete === `function`) {
-      this._onDelete();
+      this._onDelete({id: this._id});
     }
   }
 
@@ -83,7 +91,7 @@ export default class EditTask extends Component {
       title: ``,
       color: ``,
       tags: new Set(),
-      dueDate: new Date(),
+      dueDate: ``,
       repeatingDays: {
         'mo': false,
         'tu': false,
@@ -161,16 +169,16 @@ export default class EditTask extends Component {
                   <input
                     class="card__date"
                     type="text"
-                    placeholder="${moment(this._dueDate).format(`DD MMMM`)}"
                     name="date"
+                    ${this._dueDate ? `value="${moment(this._dueDate).format(`DD MMMM`)}"` : `placeholder="${moment(Date.now()).format(`DD MMMM`)}" value=""`}
                   />
                 </label>
                 <label class="card__input-deadline-wrap">
                   <input
                     class="card__time"
                     type="text"
-                    placeholder="${moment(this._dueDate).format(`hh:mm`)}"
                     name="time"
+                    ${this._dueDate? `value="${moment(this._dueDate).format(`hh:mm`)}"` : `placeholder="${moment(Date.now()).format(`hh:mm`)}" value=""`}
                   />
                 </label>
               </fieldset>
@@ -271,6 +279,44 @@ export default class EditTask extends Component {
   </article>`;
   }
 
+  blockOnSave() {
+    this._element.querySelector(`.card__save`).disabled = true;
+    this._element.querySelector(`.card__save`).innerHTML = `Saving...`;
+    this._element.querySelector(`.card__text`).disabled = true;
+  }
+
+  enableAfterSave() {
+    this._element.querySelector(`.card__save`).disabled = false;
+    this._element.querySelector(`.card__save`).innerHTML = `Save`;
+    this._element.querySelector(`.card__text`).disabled = false;
+  }
+
+  blockOnDelete() {
+    this._element.querySelector(`.card__delete`).disabled = true;
+    this._element.querySelector(`.card__delete`).innerHTML = `Deleting...`;
+    this._element.querySelector(`.card__text`).disabled = true;
+  }
+
+  enableAfterDelete() {
+    this._element.querySelector(`.card__delete`).disabled = false;
+    this._element.querySelector(`.card__delete`).innerHTML = `Delete`;
+    this._element.querySelector(`.card__text`).disabled = false;
+  }
+
+  setBorderColor(color) {
+    this._element.querySelector(`.card__inner`).style.borderColor = color;
+  }
+
+  styleOnError() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.querySelector(`.card__inner`).style.borderColor = `#ff0000`;
+    this._element.style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
+
+    setTimeout(() => {
+      this._element.style.animation = ``;
+    }, ANIMATION_TIMEOUT);
+  }
+
   setListeners() {
     this._element.querySelector(`.card__form`)
         .addEventListener(`submit`, this._onSubmitButtonClick);
@@ -321,16 +367,24 @@ export default class EditTask extends Component {
       color: (value) => (target.color = value),
       repeat: (value) => (target.repeatingDays[value] = true),
       date: (value) => {
-        target.dueDate = moment(value, `DD MMMM`).toDate().getTime();
+        if (value) {
+          target.dueDate = moment(value, `DD MMMM`).toDate().getTime();
+        } else {
+          target.dueDate = ``;
+        }
       },
       time: (value) => {
-        const time = moment(value, `HH:mm A`);
-        target.dueDate = moment(target.dueDate)
-          .set({
-            hour: time.hour(),
-            minute: time.minute()
-          }).toDate().getTime();
-      },
+        if (value) {
+          const time = moment(value, `HH:mm A`);
+          target.dueDate = moment(target.dueDate)
+            .set({
+              hour: time.hour(),
+              minute: time.minute()
+            }).toDate().getTime();
+        } else {
+          target.dueDate = ``;
+        }
+      }
     };
   }
 }
