@@ -108,8 +108,9 @@ const createTasks = (data) => {
           task.render();
           TASKS_CONTAINER.replaceChild(task.element, editTask.element);
           editTask.unrender();
-          api.getTasks().then((updatedTasks) => createFilters(updatedTasks));
+          return api.getTasks();
         })
+        .then(createFilters)
         .catch(() => {
           editTask.styleOnError();
           editTask.enableAfterSave();

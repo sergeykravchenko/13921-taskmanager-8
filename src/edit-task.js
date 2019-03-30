@@ -170,7 +170,7 @@ export default class EditTask extends Component {
                     class="card__date"
                     type="text"
                     name="date"
-                    ${this._state.isDate ? `value="${moment(this._dueDate).format(`DD MMMM`)}"` : `value=""`}
+                    ${this._dueDate ? `value="${moment(this._dueDate).format(`DD MMMM`)}"` : `placeholder="${moment(Date.now()).format(`DD MMMM`)}" value=""`}
                   />
                 </label>
                 <label class="card__input-deadline-wrap">
@@ -178,7 +178,7 @@ export default class EditTask extends Component {
                     class="card__time"
                     type="text"
                     name="time"
-                    ${this._state.isDate ? `value="${moment(this._dueDate).format(`hh:mm`)}"` : `value=""`}
+                    ${this._dueDate? `value="${moment(this._dueDate).format(`hh:mm`)}"` : `placeholder="${moment(Date.now()).format(`hh:mm`)}" value=""`}
                   />
                 </label>
               </fieldset>

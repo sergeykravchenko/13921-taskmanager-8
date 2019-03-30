@@ -66,7 +66,7 @@ export default class Task extends Component {
         <div class="card__settings">
           <div class="card__details">
             <div class="card__dates">
-              <span class="card__date">${this._dueDate ? moment(this._dueDate).format(`DD MMMM hh:mm`) : ``}</span>
+              <span class="card__date">${this._dueDate !== `` ? moment(this._dueDate).format(`DD MMMM hh:mm`) : ``}</span>
             </div>
 
             <div class="card__hashtag">
