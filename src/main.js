@@ -4,6 +4,8 @@ import Filter from './filter';
 import moment from 'moment';
 import {default as statsInit, STATS} from './stats';
 import Api from './backend-api.js';
+import Store from './store';
+import Provider from './provider.js';
 
 const BOARD = document.querySelector(`.board.container`);
 const TASKS_EMPTY = BOARD.querySelector(`.board__no-tasks`);
@@ -13,6 +15,7 @@ const tasksButton = document.querySelector(`#control__task`);
 const statsButton = document.querySelector(`#control__statistic`);
 const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/task-manager`;
+const TASKS_STORE_KEY = `tasks-store-key`;
 
 const TaskFilters = [
   {
@@ -42,6 +45,14 @@ const TaskFilters = [
 ];
 
 const api = new Api({endPoint: END_POINT, authorization: AUTHORIZATION});
+const store = new Store({key: TASKS_STORE_KEY, storage: localStorage});
+const provider = new Provider({api, store, generateId: () => String(Date.now())});
+
+window.addEventListener(`offline`, () => (document.title = `${document.title}[OFFLINE]`));
+window.addEventListener(`online`, () => {
+  document.title = document.title.split(`[OFFLINE]`)[0];
+  provider.syncTasks();
+});
 
 const onLoadTasks = () => {
   TASKS_CONTAINER.classList.add(`visually-hidden`);
@@ -101,14 +112,14 @@ const createTasks = (data) => {
       editTask.setBorderColor(`#000`);
       editTask.blockOnSave();
 
-      api.updateTask({id: task.id, data: task.toRAW()})
+      provider.updateTask({id: task.id, data: task.toRAW()})
         .then((newTask) => {
           editTask.enableAfterSave();
           task.update(newTask);
           task.render();
           TASKS_CONTAINER.replaceChild(task.element, editTask.element);
           editTask.unrender();
-          return api.getTasks();
+          return provider.getTasks();
         })
         .then(createFilters)
         .catch(() => {
@@ -120,8 +131,8 @@ const createTasks = (data) => {
     editTask.onDelete = ({id}) => {
       editTask.setBorderColor(`#000`);
       editTask.blockOnDelete();
-      api.deleteTask({id})
-        .then(() => api.getTasks())
+      provider.deleteTask({id})
+        .then(() => provider.getTasks())
         .then((newTasks) => {
           createFilters(newTasks);
           renderTasks(TASKS_CONTAINER, newTasks);
@@ -162,7 +173,7 @@ statsButton.addEventListener(`click`, onStatsButtonClick);
 
 onLoadTasks();
 
-api.getTasks()
+provider.getTasks()
   .then((tasks) => {
     tasksData = tasks;
     createFilters(tasks);
@@ -170,3 +181,4 @@ api.getTasks()
   })
   .then(onLoadTasksEnd)
   .catch(onLoadTasksError);
+

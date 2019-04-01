@@ -10,6 +10,9 @@ const util = {
       return newElement;
     }
     return newElement.firstChild;
+  },
+  objectToArray: (object) => {
+    return Object.keys(object).map((id) => object[id]);
   }
 };
 
